@@ -4,7 +4,9 @@
 
 `mdbook-fetch` is a preprocessor for [`mdbook`](https://github.com/rust-lang/mdBook).
 
-This is a work in progress, so it's not published on [https://crates.io](https://crates.io).
+It is a work in progress, so it's not published on [https://crates.io](https://crates.io).
+
+**What does it  do**: It fetches remote markdown files and adds them to your book. The idea it that we can reuse content.
 
 ## Install
 
