@@ -1,28 +1,40 @@
 # mdbook-fetch
-<img height=35 src="./gplv3.svg" alt="GPLv3 Logo: a red background with the text 'GPLv3' in white font, and an additional 'or later' in black font."/>
-This is a work in progress, so it's not published on <https://crates.io>.
 
-The way to use it as fragile as it is now, is:
+<img height=35 src="./gplv3.svg" alt="GPLv3 Logo: a red background with the text 'GPLv3' in white font, and an additional 'or later' in black font."/>
+
+`mdbook-fetch` is a preprocessor for [`mdbook`](https://github.com/rust-lang/mdBook).
+
+This is a work in progress, so it's not published on [https://crates.io](https://crates.io).
+
+## Install
 
 ```bash
 cargo install --git https://github.com/iampi31415/mdbook-fetch --locked
 ```
 
-Then add it to `[mdbook.fetch]` table in the `book.toml`, and `mdbook` will use it to fetch remote markdown. 
+## Usage
 
-The way to specify the markdown is `{{#fetch <URL>}}` where `<URL>` is to a raw markdown file, for example `{{#fetch https://raw.githubusercontent.com/rust-lang/mdBook/7b29f8a7174fa4b7b31536b84ee62e50a786658b/README.md}}`.
+1. Add to your `book.toml` the `[preprocessor.fetch]` table and now `mdbook` will use it to fetch remote markdown. 
+2. In any of your markdown files (files under `src/`) use `{{#fetch <URL>}}` where `<URL>` is to a raw markdown file. 
+    - For example 
+    ```md
+    This chapter is copied from [this source](https://github.com/rust-lang/mdBook)
 
-The requests are made one by one as they are parsed, so don't overuse it.
+    {{#fetch https://raw.githubusercontent.com/rust-lang/mdBook/7b29f8a7174fa4b7b31536b84ee62e50a786658b/README.md}}`.
+    ```
 
-To disable it if it becomes annoying in development, add `disable=true` to the `[mdbook.fetch]` table.
+The requests for remote files are serial (one after another), so don't overuse it.
+
+> [!TIP]
+> To disable it if it becomes annoying in development, add `disable=true` to the `[mdbook.fetch]` table.
 
 ## Recommendation
 
-Add a line to the source of the content, and check the license of their content allows reusing it.
+Always add a line to the source of the remote content, and check that the license of their content allows reusing it.
 
 ## Limitations
 
-It does not pre-process the markdown received from the URL so it's your responsibility to ensure it's safe to use.
+It does not preprocess the markdown received from the URL so it's your responsibility to ensure it's safe to use.
 
 Importantly, it won't work for markdown files with images (unless the images have full URLs.)
 
