@@ -39,7 +39,7 @@ This is a _copyleft_ license, so modified or verbatim copies of this work must r
 
 This is a way to ensure our software remains _free_, and a reminder to others restricting us that we are still fighting.
 
-If put in a plugin and use the output of it, no specific license applies to the  output, since the output does not contain the program.
+If put in a plugin and use the output of it, no specific license applies to the output, since the output does not contain the program.
 
 -------
 

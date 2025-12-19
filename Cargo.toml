@@ -7,6 +7,7 @@ license = "GPL-3.0-or-later"
 # toolchain version.
 rust-version="1.92"
 repository = "https://github.com/iampi31415/mdbook-fetch"
+publish = false
 
 [dependencies]
 clap = { version = "4.5.53", features = ["derive"] }
