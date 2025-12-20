@@ -26,7 +26,7 @@ use reqwest::blocking::get as get_reqwest;
 
 /// Build the regex only once.
 static RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"\s\{\{\s*#fetch\s+([^\s}{]{5,200})\s*\}\}").unwrap()
+    Regex::new(r"\{\{\s*#fetch\s+([^\s}{]{5,200})\s*\}\}").unwrap()
 });
 /// Preprocessor that fetches remote markdown files
 pub struct Fetch;
