@@ -1,0 +1,4 @@
+[toolchain]
+# use nightly for better formatting
+# since this software isn't for critical uses.
+channel = "nightly"

@@ -1,0 +1,30 @@
+[package]
+name = "mdbook-fetch"
+description = "Fetch markdown content from remote markdown files."
+version = "0.0.1"
+edition = "2024"
+license = "GPL-3.0-or-later"
+# toolchain version.
+rust-version="1.92"
+repository = "https://github.com/iampi31415/mdbook-fetch"
+publish = false
+
+[dependencies]
+mdbook-preprocessor = "0.5.2"
+pulldown-cmark = "0.13.0"
+pulldown-cmark-to-cmark = "21.1.0"
+regex = "1.12.2"
+reqwest = { version = "0.12.26", features = ["blocking"] }
+semver = "1.0.27"
+serde_json = "1.0.145"
+
+[[bin]]
+# We don't have tests there.
+# Turn it off to reduce noise.
+name="mdbook-fetch"
+test=false
+
+[lib]
+# Turn off doctests
+# We don't have any.
+doctest = false
