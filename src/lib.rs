@@ -150,11 +150,11 @@ mod test {
                             "title": "TITLE"
                         },
                         "preprocessor": {
-                            "nop": {}
+                            "fetch": {}
                         }
                     },
                     "renderer": "html",
-                    "mdbook_version": "0.4.21"
+                    "mdbook_version": "0.5.2"
                 },
                 {
                     "items": [
