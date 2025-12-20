@@ -1,7 +1,7 @@
 /*
   Copyright (c) 2025 iampi31415
 
-  This file is part of mdbook-fetch.
+  This file is part of mdbook-eetch.
 
   mdbook-fetch is free software: you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License version 2.1
@@ -19,20 +19,22 @@
 //! The remote content must be raw markdown, not HTML.
 use std::{io, process};
 
-use clap::{Arg, ArgMatches, Command};
 use mdbook_fetch::Fetch;
 use mdbook_preprocessor::{Preprocessor, errors::Result};
 use semver::{Version, VersionReq};
 
 fn main() {
     // `.get_matches()` extracts Args.
-    let c_line = make_app().get_matches();
+    let mut c_line = std::env::args();
+    let first_arg = c_line.next();
 
     let pre = Fetch;
 
-    if let Some(sub_args) = c_line.subcommand_matches("supports") {
+    if let Some("supports") = first_arg.as_deref() {
         // 1st run
-        handle_supports(&pre, sub_args);
+        let renderer =
+            c_line.next().expect("Renderer should be defined.");
+        handle_supports(&pre, &renderer);
     } else if let Err(e) = handle_preprocessing(&pre) {
         // 2nd run. Mutate or error.
         eprintln!("{e:?}");
@@ -69,10 +71,7 @@ fn handle_preprocessing(pre: &dyn Preprocessor) -> Result<()> {
 /// Inform `mdbook` whether we support the renderer passed.
 /// `0` if it supports <renderer>
 /// `1` if it does not support <renderer>
-fn handle_supports(pre: &dyn Preprocessor, sub_args: &ArgMatches) -> ! {
-    let renderer = sub_args.get_one::<String>("renderer").expect(
-        "`<renderer>` is a required argument and should be specified.",
-    );
+fn handle_supports(pre: &dyn Preprocessor, renderer: &str) -> ! {
     let supported = pre.supports_renderer(renderer).unwrap();
     // Signals to `mdbook` whether we support this `<renderer>`
     // `0` for "yes", `1` for "no".
@@ -81,31 +80,4 @@ fn handle_supports(pre: &dyn Preprocessor, sub_args: &ArgMatches) -> ! {
     } else {
         process::exit(1);
     }
-}
-/// Think of a command like `echo "hello world"`
-/// And all it's possible behaviours.
-/// Now we describe that.
-fn make_app() -> Command {
-    // Define our CLI application.
-    let command = Command::new("mdbook-fetch") // name
-        .about(
-            "`mdbook-fetch` is an `mdbook` plugin to \
-            include remote markdown.\nThe syntax is \
-            `{{#remote <URL>}}`.\nThe remote content must be \
-            raw markdown, not HTML.",
-        );
-
-    command.subcommand(
-        // create a `supports` sub-command
-        // As `test` in `cargo test`.
-        Command::new("supports")
-            // positional argument after supports
-            // `mdbook-fetch supports <renderer>`
-            .arg(Arg::new("renderer").required(true))
-            // Help for the `supports` subcommand
-            .about(
-                "Check whether a renderer is supported by \
-                    this preprocessor",
-            ),
-    )
 }

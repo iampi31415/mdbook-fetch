@@ -10,7 +10,6 @@ repository = "https://github.com/iampi31415/mdbook-fetch"
 publish = false
 
 [dependencies]
-clap = { version = "4.5.53", features = ["derive"] }
 mdbook-preprocessor = "0.5.2"
 pulldown-cmark = "0.13.0"
 pulldown-cmark-to-cmark = "21.1.0"
