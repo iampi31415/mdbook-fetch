@@ -20,7 +20,7 @@ use mdbook_preprocessor::{
     book::{Book, Chapter},
     errors::Result,
 };
-use pulldown_cmark::{Event, Parser, TextMergeStream};
+use pulldown_cmark::{Event, Parser};
 use regex::{Captures, Regex};
 use reqwest::blocking::get as get_reqwest;
 
@@ -57,7 +57,7 @@ impl Preprocessor for Fetch {
                 });
                 Ok(book)
             }
-            Ok(_) => Ok(book),
+            Ok(Some(true)) => Ok(book),
             Err(err) => Err(err.into()),
         }
     }
@@ -73,24 +73,25 @@ fn include_markdown(ch: &mut Chapter) -> Result<String> {
     let mut buf = String::with_capacity(ch.content.len());
 
     // Iterator over events
-    let parser =
-        TextMergeStream::new(Parser::new(&ch.content)).map(|e| match e {
-            Event::Text(text) => {
-                let result = url_to_content(&text).into();
-                Event::Text(result)
-            }
-            _ => e,
-        });
+    let parser = Parser::new(&ch.content).map(|e| match e {
+        Event::Text(text) => {
+            let fetched_markdown = find_and_replace_fetches(&text);
+            Event::Text(fetched_markdown.into())
+        }
+        _ => e,
+    });
     Ok(pulldown_cmark_to_cmark::cmark(parser, &mut buf).map(|_| buf)?)
 }
-/// Replaces the URL to markdown-content by the content itself.
-/// Could be used for other formats eventually.
-fn url_to_content(content: &str) -> String {
-    RE.replace(content, |caps: &Captures| {
-        let mut r = get_reqwest(format!("{}", &caps[1]))
-            .unwrap()
-            .text()
-            .unwrap();
+
+fn fetch(url: String) -> String {
+    get_reqwest(url).unwrap().text().unwrap()
+}
+/// Search through `text`, replace any `{{#fetch <URL>}}` with the
+/// content the URL points to.
+/// `<URL>` must be web address to _raw_ markdown.
+fn find_and_replace_fetches(text: &str) -> String {
+    RE.replace(text, |caps: &Captures| {
+        let mut r: String = fetch(caps[1].into());
         r.insert_str(0, "\n");
         r
     })
@@ -140,7 +141,7 @@ mod test {
         {{#fetch https://raw.githubusercontent.com/rust-lang/mdBook/7b29f8a7174fa4b7b31536b84ee62e50a786658b/README.md}}
         ";
         // println!("\n\nOLD: {content}\n\n");
-        let new_doc = url_to_content(&content);
+        let new_doc = find_and_replace_fetches(&content);
         // println!("\n\nNEW: {new_doc}\n\n");
         assert!(new_doc.starts_with("safgd"));
         assert!(
