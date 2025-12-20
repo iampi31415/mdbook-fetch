@@ -26,6 +26,7 @@ use semver::{Version, VersionReq};
 fn main() {
     // `.get_matches()` extracts Args.
     let mut c_line = std::env::args();
+    let _ = c_line.next(); // binary name.
     let first_arg = c_line.next();
 
     let pre = Fetch;
@@ -35,6 +36,10 @@ fn main() {
         let renderer =
             c_line.next().expect("Renderer should be defined.");
         handle_supports(&pre, &renderer);
+    } else if let Some(val) = first_arg.as_deref() {
+        // 2nd run. Mutate or error.
+        eprintln!(r#"Expected "supports" but found {val:?}"#);
+        process::exit(1);
     } else if let Err(e) = handle_preprocessing(&pre) {
         // 2nd run. Mutate or error.
         eprintln!("{e:?}");
@@ -46,6 +51,7 @@ fn main() {
 /// `mdbook-preprocessor` are "semver compatible".
 /// `pre` is the type implementing `Preprocessor` trait.
 fn handle_preprocessing(pre: &dyn Preprocessor) -> Result<()> {
+    // Here it waits for the mdbook input.
     let (ctx, book) = mdbook_preprocessor::parse_input(io::stdin())?;
 
     let user_version = Version::parse(&ctx.mdbook_version)?;
