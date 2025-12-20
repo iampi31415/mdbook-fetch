@@ -111,25 +111,29 @@ mod test {
             // Should fail: blank in `// a.`
             {{ #fetch https:// abc.def.g/mypath/to.md }} 
             // Should pass {{ #fetch https://abc.def.g/mypath/to.md }} 
-            // Should pass
-            {{#fetch https://abc.def.ga.b.c/mypath/to.md}}
+            // Should pass\n
+{{#fetch https://abc.def.ga.b.c/mypath/to.md}}
             // Should pass: `http` is accepted
             {{ #fetch http://this.is.insecure/fails/to.md }}
             // Should pass: {{#fetch https://github.com/rvben/rumdl/blob/main/docs/markdownlint-comparison.md}}
+            
+            The source of the following content is at <https://github.com/rust-lang/mdBook/> {{#fetch https://raw.githubusercontent.com/rust-lang/mdBook/7b29f8a7174fa4b7b31536b84ee62e50a786658b/README.md }}
+
         //"#;
         fn find_markdown_urls(str_file: &str) -> Vec<&str> {
             // I did not find out a way to use the same regex
             // since `regex!` and `regex_replace_all!` need a
             // literal. And using `static reg=..` was too hard.
-            let found: Vec<&str> = RE
-                .find_iter(str_file)
-                .map(|m: Match| m.as_str())
-                .collect();
-            found
+            RE.find_iter(str_file).map(|m: Match| m.as_str()).collect()
         }
 
         let result = find_markdown_urls(input_str);
-        assert_eq!(result.len(), 4)
+        let last_result = *result.last().unwrap();
+        assert_eq!(
+            last_result,
+            "{{#fetch https://raw.githubusercontent.com/rust-lang/mdBook/7b29f8a7174fa4b7b31536b84ee62e50a786658b/README.md }}"
+        );
+        assert_eq!(result.len(), 5)
     }
     #[test]
     fn test_full_run() {
@@ -155,7 +159,7 @@ mod test {
                         {
                             "Chapter": {
                                 "name": "Chapter 1",
-                                "content": "The following content is reproduced from the source: {{#fetch https://raw.githubusercontent.com/rust-lang/mdBook/7b29f8a7174fa4b7b31536b84ee62e50a786658b/README.md}}",
+                                "content": "The source of the following content is at <https://github.com/rust-lang/mdBook/> {{#fetch https://raw.githubusercontent.com/rust-lang/mdBook/7b29f8a7174fa4b7b31536b84ee62e50a786658b/README.md }}",
                                 "number": [1],
                                 "sub_items": [],
                                 "path": "chapter_1.md",
@@ -175,10 +179,7 @@ mod test {
 
         let dst_book = result.unwrap();
         let first = &dst_book.chapters().next().unwrap().content;
-        assert!(first.contains(
-            "The following content is reproduced from the source:"
-        ));
-        assert!(first.contains("mdBook is a utility to create modern online books from Markdown files.
-"))
+        assert!(first.contains("The source of the following"));
+        assert!(first.contains("mdBook is a utility to create modern online books from Markdown files."))
     }
 }
