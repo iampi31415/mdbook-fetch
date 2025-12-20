@@ -110,14 +110,12 @@ mod test {
         let input_str: &str = r#"some text and even more but now 
             // Should fail: blank in `// a.`
             {{ #fetch https:// abc.def.g/mypath/to.md }} 
-            // Should pass
-            {{ #fetch https://abc.def.g/mypath/to.md }} 
+            // Should pass {{ #fetch https://abc.def.g/mypath/to.md }} 
             // Should pass
             {{#fetch https://abc.def.ga.b.c/mypath/to.md}}
             // Should pass: `http` is accepted
             {{ #fetch http://this.is.insecure/fails/to.md }}
-            // Should pass:
-            {{#fetch https://github.com/rvben/rumdl/blob/main/docs/markdownlint-comparison.md}}
+            // Should pass: {{#fetch https://github.com/rvben/rumdl/blob/main/docs/markdownlint-comparison.md}}
         //"#;
         fn find_markdown_urls(str_file: &str) -> Vec<&str> {
             // I did not find out a way to use the same regex
@@ -133,23 +131,6 @@ mod test {
         let result = find_markdown_urls(input_str);
         assert_eq!(result.len(), 4)
     }
-    #[test]
-    fn test_url_replacement() {
-        let content = r"safgdsafgdsaf
-        hello world
-
-        {{#fetch https://raw.githubusercontent.com/rust-lang/mdBook/7b29f8a7174fa4b7b31536b84ee62e50a786658b/README.md}}
-        ";
-        // println!("\n\nOLD: {content}\n\n");
-        let new_doc = find_and_replace_fetches(&content);
-        // println!("\n\nNEW: {new_doc}\n\n");
-        assert!(new_doc.starts_with("safgd"));
-        assert!(
-            new_doc
-                .contains("mdBook is a utility to create modern online books from Markdown files.")
-        )
-    }
-
     #[test]
     fn test_full_run() {
         let input_json = r##"[
@@ -174,7 +155,7 @@ mod test {
                         {
                             "Chapter": {
                                 "name": "Chapter 1",
-                                "content": "# Chapter 1\n safgdsafgdsaf hello world {{#fetch https://raw.githubusercontent.com/rust-lang/mdBook/7b29f8a7174fa4b7b31536b84ee62e50a786658b/README.md}}",
+                                "content": "The following content is reproduced from the source: {{#fetch https://raw.githubusercontent.com/rust-lang/mdBook/7b29f8a7174fa4b7b31536b84ee62e50a786658b/README.md}}",
                                 "number": [1],
                                 "sub_items": [],
                                 "path": "chapter_1.md",
@@ -187,15 +168,17 @@ mod test {
             ]"##;
         let input_json = input_json.as_bytes();
 
-        let (ctx, book) =
+        let (ctx, src_book) =
             mdbook_preprocessor::parse_input(input_json).unwrap();
-        let result = Fetch.run(&ctx, book);
+        let result = Fetch.run(&ctx, src_book);
         assert!(result.is_ok());
 
-        // The nop-preprocessor should not have made any changes to the
-        // book content.
-        let actual_book = result.unwrap();
-        let first = actual_book.chapters().next().unwrap().to_string();
-        println!("{first}");
+        let dst_book = result.unwrap();
+        let first = &dst_book.chapters().next().unwrap().content;
+        assert!(first.contains(
+            "The following content is reproduced from the source:"
+        ));
+        assert!(first.contains("mdBook is a utility to create modern online books from Markdown files.
+"))
     }
 }
